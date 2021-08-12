@@ -35,7 +35,7 @@ function preload() { // Preloading necessary shaders
 
 function setup() {
 
-  createCanvas(windowWidth, 500);
+  createCanvas(500, 500);
   noStroke();
 
   mandelbrot = createGraphics(500, 500, WEBGL); // Graphics buffer to calculate the shader (THIS HAS THE RESOLUTION OF THE RENDER)
@@ -105,6 +105,7 @@ function draw() {
 
   
   downsample.image(mandelbrot, 0, 0, downsample.width, downsample.height); //Load the shader in the analysis buffer, downsampling it,
+  analysis.translate(-width/2, -height/2); // Fix WEBGL coordinates
   analysis.rect(0, 0, analysis.width, analysis.height);
   analysis.loadPixels();
   getColorBalance(analysis.pixels);
@@ -155,7 +156,7 @@ function checkSmoothing() {
 }
 
 function checkAspectRatio() {
-  aspectRatio = windowWidth/windowHeight;
+  aspectRatio = width/height;
   scaleX = smoothScale;
   scaleY = smoothScale;
 
@@ -318,7 +319,7 @@ function rgb2lab(rgb){
 
 function windowResized() {
 
-  resizeCanvas(windowWidth, 500);
+  // resizeCanvas(windowWidth, 500);
 
 }
 
@@ -354,13 +355,12 @@ function makeGrain(arr) { // This will look at the colorBalance array and create
     }
 
   }
-
+ 
 
   if(result > 0) {
-    console.log(floor(result/3));
     result--;
+    console.log(result);
     mandelVoice.play(floor(result/3),random(), random(), grainParams[result].attack, grainParams[result].release, grainParams[result].spread, grainParams[result].pan);
-
   }
 
 
@@ -480,6 +480,10 @@ function initiateGrainParams() {
   return params;
 
 
+}
+
+function mousePressed() {
+  userStartAudio(); 
 }
 
 // function makeGrain(x, y) {

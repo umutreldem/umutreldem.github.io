@@ -69,7 +69,6 @@ function Grain(buffer, positionx, positiony, attack, release, spread, pan) {
     this.positionx = positionx;
     this.positionx += (Math.random()* (xOff * 2)) - xOff;
     this.offset = this.positionx * (buffer.duration)
-    console.log(this.offset);
 
     // Amplitude calculate and update
     this.positiony = positiony;
@@ -213,6 +212,7 @@ convRequest.onload = function() {
     let audioData = convRequest.response;
     context.decodeAudioData(audioData, function(b) {
         convolver.buffer = b;
+        console.log('Loaded convolver file!');
     }, function(e){console.log("Error with decoding audio data" + e.err)});
 }
 convRequest.send();
