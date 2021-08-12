@@ -26,7 +26,7 @@ void main() {
 
     vec2 st = gl_FragCoord.xy/u_resolution;
 
-    vec2 c = Area.xy + (st.xy - 1.) * Area.zw; // Have to subtract 1. from st.xy (*not* 0.5!)
+    vec2 c = Area.xy + (st.xy - 0.5) * Area.zw; // Have to subtract 1. from st.xy (*not* 0.5!)
     c = rot(c, Area.xy, Angle);
 
     vec2 z = vec2(0, 0);
@@ -38,7 +38,7 @@ void main() {
         if(length(z) > 2.) break;
     }
 
-    if(result >= 255. || result <= 20.) {
+    if(result >= 254. || result <= 20.) {
 
             gl_FragColor = vec4(0., 0., 0., 1.);
 

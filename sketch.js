@@ -35,16 +35,21 @@ function preload() { // Preloading necessary shaders
 
 function setup() {
 
-  createCanvas(500, 500);
+  createCanvas(600, 600);
   noStroke();
 
   mandelbrot = createGraphics(500, 500, WEBGL); // Graphics buffer to calculate the shader (THIS HAS THE RESOLUTION OF THE RENDER)
   analysis = createGraphics(100, 100, WEBGL); // Graphics buffers to downsample and analyze the shader
   
+  mandelbrot.pixelDensity(1);
   analysis.pixelDensity(1);
+
   incr = 1./(analysis.width*analysis.height);
 
   downsample = createGraphics(100, 100);
+
+  downsample.pixelDensity(1);
+
   colorPalette = createGraphics(5, 1); // Graphics buffer to hold the color palette
 
   mandelPos = createVector(0., 0.); // Initial settings for the uniforms
@@ -483,6 +488,7 @@ function initiateGrainParams() {
 }
 
 function mousePressed() {
+  userStartAudio(); 
 }
 
 // function makeGrain(x, y) {
