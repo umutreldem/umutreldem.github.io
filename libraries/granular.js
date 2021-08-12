@@ -35,7 +35,7 @@ let yOff = 0.2;
 
 
 // Grain class
-function Grain(buffer, positionx, positiony, attack, release, spread, pan) {
+function Grain(buffer, positionx, positiony, attack, release, spread, pan, vol) {
 
     var that = this; // Scope issues
     this.now = context.currentTime; // Update the time value
@@ -45,8 +45,10 @@ function Grain(buffer, positionx, positiony, attack, release, spread, pan) {
     this.source.playbackRate.value *= trans;
     this.source.buffer = buffer;
 
+
     // Gain for enveloping
     this.gain = context.createGain();
+    this.vol = vol;
 
     let yes = Math.ceil((Math.random() * 3.));
 
@@ -89,7 +91,7 @@ function Grain(buffer, positionx, positiony, attack, release, spread, pan) {
     this.source.start(this.now, Math.abs(this.offset + this.randomoffset), this.attack + this.release);
     this.gain.gain.setValueAtTime(0.0, this.now);
     this.gain.gain.linearRampToValueAtTime(this.amp, this.now + this.attack);
-    this.gain.gain.linearRampToValueAtTime(0, this.now + (this.attack + this.release));
+    this.gain.gain.linearRampToValueAtTime(0.0, this.now + (this.attack + this.release));
 
     //Garbage collection
     this.source.stop(this.now + this.attack + this.release + 0.1);

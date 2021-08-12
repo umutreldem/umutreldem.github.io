@@ -38,7 +38,7 @@ function setup() {
   createCanvas(600, 600);
   noStroke();
 
-  mandelbrot = createGraphics(500, 500, WEBGL); // Graphics buffer to calculate the shader (THIS HAS THE RESOLUTION OF THE RENDER)
+  mandelbrot = createGraphics(800, 600, WEBGL); // Graphics buffer to calculate the shader (THIS HAS THE RESOLUTION OF THE RENDER)
   analysis = createGraphics(100, 100, WEBGL); // Graphics buffers to downsample and analyze the shader
   
   mandelbrot.pixelDensity(1);
@@ -128,7 +128,7 @@ function draw() {
         fill(palette[floor(i/3)]);
         textSize(50);
 
-        text(amount.toFixed(2), 50 + (floor(i/3) * (width/5)), height - 20 - ((i%3) * 50));
+        text(amount.toFixed(2), 10 + (floor(i/3) * (width/5)), height - 20 - ((i%3) * 50));
       
     }
   }
@@ -365,7 +365,7 @@ function makeGrain(arr) { // This will look at the colorBalance array and create
   if(result > 0) {
     result--;
     console.log(result);
-    mandelVoice.play(floor(result/3),random(), random(), grainParams[result].attack, grainParams[result].release, grainParams[result].spread, grainParams[result].pan);
+    mandelVoice.play(floor(result/3),random(), random(0, 0.05), grainParams[result].attack, grainParams[result].release, grainParams[result].spread, grainParams[result].pan, 1.);
   }
 
 
