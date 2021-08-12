@@ -483,7 +483,6 @@ function initiateGrainParams() {
 }
 
 function mousePressed() {
-  userStartAudio(); 
 }
 
 // function makeGrain(x, y) {
