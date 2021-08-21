@@ -161,14 +161,14 @@ function draw() {
 
   }
 
-  if(frameCount%60 === 0) {
+  if(frameCount%30 === 0) {
 
     generateGrains();
 
   }
 
 
-  setPhaserParams(BFGBank, millis() / 10000.);
+  setPhaserParams(BFGBank, map(mandelDepth, 0, 500, 0., 1.,true));
 
 
   if(debugMode) {
@@ -475,7 +475,7 @@ function setPhaserParams(bank, val) {
     let newParams = bank[i].getValues(val);
     
     let freq = newParams[0] * 4000.;
-    let rate = newParams[1] * 5.;
+    let rate = newParams[1] * 2.;
     let depth = newParams[2] * 0.5;
     let stereoPhase = newParams[3] * 100.;
 
@@ -492,7 +492,7 @@ function setPhaserParams(bank, val) {
 
 function generateGrains() {
 
-  let amount = map(colorAmount[5], 0., 1., 10., 30.);
+  let amount = map(colorAmount[5], 0., 1., 5., 20.);
 
   //makeGrain(colorBalance);
 
@@ -529,7 +529,7 @@ function makeGrain(arr) { // This will look at the colorBalance array and create
     let curColor = floor(result/3);
     let curColorAmount = colorAmount[curColor];
     curColorAmount = 1. - pow(1. - curColorAmount, 2); // easeOutCubic easing function
-    curColorAmount *= 0.5; // General downscaling.
+    curColorAmount *= 1.; // General downscaling.
 
     mandelVoice.play(curColor, xPos, curColorAmount, grainParams[result]);
   }
@@ -591,7 +591,7 @@ function initiateGrainParams() {
       release: 0.4,
       releaseRandOff: 0.1,
       spread: 0.2,
-      speed: 2.5,
+      speed: 1.,
       speedRandOff: 0.25,
       pan: 0.1
     },

@@ -11,8 +11,8 @@ const tuna = new Tuna(context);
 
 const master = context.createGain(); // Master gain node, connected to the destination
 master.connect(context.destination); 
-
-const filter = context.createBiquadFilter({type: 'lowpass'});
+ 
+const filter = context.createBiquadFilter({type: 'lowpass', frequency: 1200});
 filter.connect(master);
 
 const convolver = context.createConvolver(); // Convolver node
@@ -158,7 +158,7 @@ function Voice() {
         that.grains[that.graincount] = this.g;
         that.graincount++;
 
-        if(that.graincount > 20) {
+        if(that.graincount > 30) {
             that.graincount = 0;
         }
     }
@@ -175,7 +175,7 @@ function Voice() {
 
 // Loading the audio files into buffers
 const request1 = new XMLHttpRequest();
-request1.open('GET', 'audio/scriabin.mp3', true);
+request1.open('GET', 'audio/bell1.wav', true);
 request1.responseType = 'arraybuffer';
 request1.onload = function() {
     context.decodeAudioData(request1.response, function(b){
@@ -190,7 +190,7 @@ request1.onload = function() {
 request1.send();
 
 const request2 = new XMLHttpRequest();
-request2.open('GET', 'audio/vs_flute_q2.wav', true);
+request2.open('GET', 'audio/mes.wav', true);
 request2.responseType = 'arraybuffer';
 request2.onload = function() {
     context.decodeAudioData(request2.response, function(b){
@@ -205,7 +205,7 @@ request2.onload = function() {
 request2.send();
 
 const request3 = new XMLHttpRequest();
-request3.open('GET', 'audio/bell1.wav', true);
+request3.open('GET', 'audio/scriabin.mp3', true);
 request3.responseType = 'arraybuffer';
 request3.onload = function() {
     context.decodeAudioData(request3.response, function(b){
