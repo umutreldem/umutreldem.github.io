@@ -3,13 +3,40 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Sketch</title>
 
     <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="libraries/pleaserotate.js"></script>
+    <script src="libraries/tuna-min.js"></script> 
 
+    <script>
+      /* you can pass in options here */
+      PleaseRotateOptions = {
+          forcePortrait: false, // if you would prefer to force portrait mode
+          allowClickBypass: false,
+          subMessage: ""
+      };
+    </script>
+    <script src="libraries/hammer.min.js"></script>
+
+    
+    <script src="fractaudio.js"></script>
     <script src="libraries/p5.min.js"></script>
-    <script src="libraries/granular.js"></script>
+
+    <style>
+      /* style the elements with CSS */
+      #pleaserotate-graphic{
+          fill: #fff;
+      }
+  
+      #pleaserotate-backdrop {
+          color: #fff;
+          background-color: #000;
+      }
+  </style>
+  
+
+
   </head>
 
   <body>

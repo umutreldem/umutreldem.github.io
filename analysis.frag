@@ -143,11 +143,11 @@ void main() {
         vec4 nDown = texture2D(tex0, vec2(st.x, st.y - stepY));
 
         if(isBlack(nLeft.rgb) || isBlack(nRight.rgb) || isBlack(nUp.rgb) || isBlack(nDown.rgb)) {  
-            thisNeigh = 0.1;
+            thisNeigh = 0.1; // First State (EMPTY BORDER)
         } else if(color.rgb == nLeft.rgb && color.rgb == nRight.rgb && color.rgb == nUp.rgb && color.rgb == nDown.rgb) {
-            thisNeigh = 0.2;
+            thisNeigh = 0.2; // Second State (FILL)
         } else {
-            thisNeigh = 0.3;
+            thisNeigh = 0.3; // Third State (MIXED or GRADIENT)
         }
 
     }
