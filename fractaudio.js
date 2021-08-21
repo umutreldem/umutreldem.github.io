@@ -15,8 +15,20 @@ master.connect(context.destination);
 const filter = context.createBiquadFilter({type: 'lowpass', frequency: 1200});
 filter.connect(master);
 
-const convolver = context.createConvolver(); // Convolver node
+// const convolver = context.createConvolver(); // Convolver node
+// 
+
+const convolver = new tuna.Convolver({
+    highCut: 5900,                         //20 to 22050
+    lowCut: 100,                             //20 to 22050
+    dryLevel: 1,                            //0 to 1+
+    wetLevel: 1,                            //0 to 1+
+    level: 1,                               //0 to 1+, adjusts total output of both wet and dry
+    impulse: "audio/HS.wav",    //the path to your impulse response
+    bypass: 0
+});
 convolver.connect(filter);
+
 
 const delay = new tuna.Delay(); // Delay node
 delay.connect(convolver);
@@ -108,10 +120,11 @@ function Grain(buffer, positionx, positiony, params, bufferInd) {
     //Envelope parameters
     this.attack = params.attack;
     this.attack += random(-params.attackRandOff, params.attackRandOff);
+
     //console.log(this.attack);
 
     this.release = params.release;
-    this.attack += random(-params.releaseRandOff, params.releaseRandOff);
+    this.release += random(-params.releaseRandOff, params.releaseRandOff);
 
     if(this.release < 0) {
         this.release = 0.1;
@@ -190,7 +203,7 @@ request1.onload = function() {
 request1.send();
 
 const request2 = new XMLHttpRequest();
-request2.open('GET', 'audio/mes.wav', true);
+request2.open('GET', 'audio/Mes.wav', true);
 request2.responseType = 'arraybuffer';
 request2.onload = function() {
     context.decodeAudioData(request2.response, function(b){
@@ -260,4 +273,4 @@ convRequest.onload = function() {
         console.log('Loaded convolver file!');
     }, function(e){console.log("Error with decoding audio data" + e.err)});
 }
-convRequest.send();
+//convRequest.send();

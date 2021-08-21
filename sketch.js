@@ -168,7 +168,7 @@ function draw() {
   }
 
 
-  setPhaserParams(BFGBank, map(mandelDepth, 0, 500, 0., 1.,true));
+  setPhaserParams(BFGBank, map(mandelDepth, 0, 1500, 0., 1.,true));
 
 
   if(debugMode) {
@@ -468,7 +468,7 @@ function mousePressed() {
 }
 
 
-function setPhaserParams(bank, val) {
+function setPhaserParams(bank, val) { // Takes BFG bank and current time value, and sets the phaser bank parameters accordingly.
 
   for(let i = 0; i < bank.length; i++) {
 
@@ -489,10 +489,21 @@ function setPhaserParams(bank, val) {
 }
 
 
+function setConvolverParams(depth) { // Takes mandelbrot depth (0 - 500) and sets wet/dry level of reverb.
+
+  let wet = map(depth, 0, 1500, 0.8, 0.05, true);
+  let dry = 1. - wet;
+
+  convolver.dryLevel = dry;
+  convolver.wetLevel = wet;
+
+
+}
+
 
 function generateGrains() {
 
-  let amount = map(colorAmount[5], 0., 1., 5., 20.);
+  let amount = map(colorAmount[5], 0., 1., 5., 10.);
 
   //makeGrain(colorBalance);
 
@@ -528,8 +539,10 @@ function makeGrain(arr) { // This will look at the colorBalance array and create
     let xPos = (mandelDepth % 1500.) / 1500.;
     let curColor = floor(result/3);
     let curColorAmount = colorAmount[curColor];
-    curColorAmount = 1. - pow(1. - curColorAmount, 2); // easeOutCubic easing function
+    curColorAmount = sqrt(1 - pow(curColorAmount - 1, 2)); // easeOutCirc easing function
     curColorAmount *= 1.; // General downscaling.
+
+    console.log(curColorAmount);
 
     mandelVoice.play(curColor, xPos, curColorAmount, grainParams[result]);
   }
