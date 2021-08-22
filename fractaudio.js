@@ -11,9 +11,19 @@ const tuna = new Tuna(context);
 
 const master = context.createGain(); // Master gain node, connected to the destination
 master.connect(context.destination); 
+
+const compressor = new tuna.Compressor({
+    threshold: -20,    //-100 to 0
+    makeupGain: 0.,     //0 and up (in decibels)
+    attack: 1,         //0 to 1000
+    release: 250,      //0 to 3000
+    ratio: 4,          //1 to 20
+    knee: 5,           //0 to 40
+    automakeup: false, //true/false
+    bypass: 0
+});
+compressor.connect(master)
  
-const filter = context.createBiquadFilter({type: 'lowpass', frequency: 1200});
-filter.connect(master);
 
 // const convolver = context.createConvolver(); // Convolver node
 // 
@@ -27,11 +37,21 @@ const convolver = new tuna.Convolver({
     impulse: "audio/HS.wav",    //the path to your impulse response
     bypass: 0
 });
-convolver.connect(filter);
+convolver.connect(compressor);
+
+const filter = new tuna.Filter({
+    frequency: 800,         //20 to 22050
+    Q: 10,                   //0.001 to 100
+    gain: 0,                //-40 to 40 (in decibels)
+    filterType: "lowpass",  //lowpass, highpass, bandpass, lowshelf, highshelf, peaking, notch, allpass
+    bypass: 0
+});
+filter.connect(convolver);
+
 
 
 const delay = new tuna.Delay(); // Delay node
-delay.connect(convolver);
+delay.connect(filter);
 
 const phaserBank = Array(5);
 for(let i = 0; i < phaserBank.length; i++) {
@@ -79,7 +99,7 @@ function Grain(buffer, positionx, positiony, params, bufferInd) {
 
     // Setting playback rate
     this.speed = params.speed;
-    this.speedOff = random(-params.speedRandOff, params.speedRandOff);
+    this.speedOff = random(params.speedRandOff);
     this.speed += this.speedOff
 
     this.source.playbackRate.value = params.speed;
@@ -120,16 +140,19 @@ function Grain(buffer, positionx, positiony, params, bufferInd) {
     //Envelope parameters
     this.attack = params.attack;
     this.attack += random(-params.attackRandOff, params.attackRandOff);
+    this.attack = Math.abs(this.attack);
 
     //console.log(this.attack);
 
     this.release = params.release;
     this.release += random(-params.releaseRandOff, params.releaseRandOff);
+    this.attack = Math.abs(this.release);
+
 
     if(this.release < 0) {
         this.release = 0.1;
     }
-    this.spread = params.spread;
+    this.spread = params.spread * (buffer.duration);
 
     this.randomoffset = (Math.random() * this.spread) - (this.spread/2);
 
@@ -188,7 +211,7 @@ function Voice() {
 
 // Loading the audio files into buffers
 const request1 = new XMLHttpRequest();
-request1.open('GET', 'audio/bell1.wav', true);
+request1.open('GET', 'audio/ocarina1.wav', true);
 request1.responseType = 'arraybuffer';
 request1.onload = function() {
     context.decodeAudioData(request1.response, function(b){
@@ -233,7 +256,7 @@ request3.onload = function() {
 request3.send();
 
 const request4 = new XMLHttpRequest();
-request4.open('GET', 'audio/chime1.wav', true);
+request4.open('GET', 'audio/vs_flute_q2.wav', true);
 request4.responseType = 'arraybuffer';
 request4.onload = function() {
     context.decodeAudioData(request4.response, function(b){

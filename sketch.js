@@ -8,7 +8,7 @@ let mandelShader, mandelAnalysis; // Shaders for visualising and analysing the v
 let mandelPos, mandelDir; // Vectors to hold pos and dir info
 
 let mandelScale = 5.; // Uniforms
-let mandelSpeed = 0.01;
+let mandelSpeed = 0.005;
 let mandelAngle = 0.;
 let mandelDepth = 0.; 
 let scaleX, scaleY;
@@ -64,7 +64,7 @@ function setup() {
   noStroke();
 
   screenLength = sqrt(width*width + height*height);
-
+  setAttributes('antialias', false);
   mandelbrot = createGraphics(width/quality, height/quality, WEBGL); // Graphics buffer to calculate the shader (THIS HAS THE RESOLUTION OF THE RENDER)
   analysis = createGraphics(100, 100, WEBGL); // Graphics buffers to downsample and analyze the shader
   
@@ -138,7 +138,7 @@ function draw() {
 
   mandelbrot.rect(0, 0, mandelbrot.width, mandelbrot.height); //Display the shader in the graphics buffer, and then display that on the main canvas.
   image(mandelbrot, 0, 0, width, height); 
-
+  
 
   if(frameCount%10 === 0) {
 
@@ -161,7 +161,9 @@ function draw() {
 
   }
 
-  if(frameCount%30 === 0) {
+
+
+  if(frameCount%60 === 0) {
 
     generateGrains();
 
@@ -169,7 +171,7 @@ function draw() {
 
 
   setPhaserParams(BFGBank, map(mandelDepth, 0, 1500, 0., 1.,true));
-
+  setConvolverParams(mandelDepth);
 
   if(debugMode) {
     for(let i = 0; i < colorBalance.length; i++) { // Write color values on screen
@@ -491,8 +493,9 @@ function setPhaserParams(bank, val) { // Takes BFG bank and current time value, 
 
 function setConvolverParams(depth) { // Takes mandelbrot depth (0 - 500) and sets wet/dry level of reverb.
 
-  let wet = map(depth, 0, 1500, 0.8, 0.05, true);
+  let wet = map(depth, 0, 1300, 0.75, 0.4, true);
   let dry = 1. - wet;
+
 
   convolver.dryLevel = dry;
   convolver.wetLevel = wet;
@@ -540,9 +543,9 @@ function makeGrain(arr) { // This will look at the colorBalance array and create
     let curColor = floor(result/3);
     let curColorAmount = colorAmount[curColor];
     curColorAmount = sqrt(1 - pow(curColorAmount - 1, 2)); // easeOutCirc easing function
-    curColorAmount *= 1.; // General downscaling.
+    curColorAmount = map(curColorAmount, 0., 1., 0.3, 0.7); // General downscaling.
 
-    console.log(curColorAmount);
+    //console.log(curColorAmount);
 
     mandelVoice.play(curColor, xPos, curColorAmount, grainParams[result]);
   }
@@ -555,167 +558,167 @@ function initiateGrainParams() {
 
   let params = [
     {
-      attack: 0.1, // Color 1 State 1 (EMPTY BORDER)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 2.5,
+      attack: 0.01, // Color 1 State 1 (EMPTY BORDER)
+      attackRandOff: 0.2,
+      release: 0.01,
+      releaseRandOff: 0.2,
+      spread: 0.35,
+      speed: 4.,
       speedRandOff: 0.25,
       pan: 0.1
     },
     
     {
-      attack: 0.4, // Color 1 State 2 (FILL)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 1.,
+      attack: 0.3, // Color 1 State 2 (FILL)
+      attackRandOff: 0.15,
+      release: 0.2,
+      releaseRandOff: 0.15,
+      spread: 0.05,
+      speed: 0.15,
+      speedRandOff: 0.15,
+      pan: 0.1
+    },
+    
+    {
+      attack: 0.1, // Color 1 State 3 (MIXED or GRADIENT)
+      attackRandOff: 0.05,
+      release: 0.5,
+      releaseRandOff: 0.05,
+      spread: 0.3,
+      speed: 1.5,
+      speedRandOff: 0.50,
+      pan: 0.1
+    },
+    
+    {
+      attack: 0.01, // Color 2 State 1 (EMPTY BORDER)
+      attackRandOff: 0.2,
+      release: 0.01,
+      releaseRandOff: 0.2,
+      spread: 0.35,
+      speed: 4.,
       speedRandOff: 0.25,
       pan: 0.1
     },
     
     {
-      attack: 0.4, // Color 1 State 3 (MIXED or GRADIENT)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 1.,
+      attack: 0.3, // Color 2 State 2 (FILL)
+      attackRandOff: 0.15,
+      release: 0.2,
+      releaseRandOff: 0.15,
+      spread: 0.05,
+      speed: 0.7,
+      speedRandOff: 0.15,
+      pan: 0.1
+    },
+    
+    {
+      attack: 0.1, // Color 2 State 3 (MIXED or GRADIENT)
+      attackRandOff: 0.05,
+      release: 0.5,
+      releaseRandOff: 0.05,
+      spread: 0.3,
+      speed: 1.5,
+      speedRandOff: 0.50,
+      pan: 0.1
+    },
+    
+    {
+      attack: 0.01, // Color 3 State 1 (EMPTY BORDER)
+      attackRandOff: 0.2,
+      release: 0.01,
+      releaseRandOff: 0.2,
+      spread: 0.35,
+      speed: 4.,
       speedRandOff: 0.25,
       pan: 0.1
     },
     
     {
-      attack: 0.4, // Color 2 State 1 (EMPTY BORDER)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 2.5,
+      attack: 0.3, // Color 3 State 2 (FILL)
+      attackRandOff: 0.15,
+      release: 0.2,
+      releaseRandOff: 0.15,
+      spread: 0.05,
+      speed: 0.7,
+      speedRandOff: 0.15,
+      pan: 0.1
+    },
+    
+    {
+      attack: 0.1, // Color 3 State 3 (MIXED or GRADIENT)
+      attackRandOff: 0.05,
+      release: 0.5,
+      releaseRandOff: 0.05,
+      spread: 0.3,
+      speed: 1.5,
+      speedRandOff: 0.50,
+      pan: 0.1
+    },
+    
+    {
+      attack: 0.01, // Color 4 State 1 (EMPTY BORDER)
+      attackRandOff: 0.2,
+      release: 0.01,
+      releaseRandOff: 0.2,
+      spread: 0.35,
+      speed: 4.,
       speedRandOff: 0.25,
       pan: 0.1
     },
     
     {
-      attack: 0.4, // Color 2 State 2 (FILL)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 1.,
+      attack: 0.3, // Color 4 State 2 (FILL)
+      attackRandOff: 0.15,
+      release: 0.2,
+      releaseRandOff: 0.15,
+      spread: 0.05,
+      speed: 0.7,
+      speedRandOff: 0.15,
+      pan: 0.1
+    },
+    
+    {
+      attack: 0.1, // Color 4 State 3 (MIXED or GRADIENT)
+      attackRandOff: 0.05,
+      release: 0.5,
+      releaseRandOff: 0.05,
+      spread: 0.3,
+      speed: 1.5,
+      speedRandOff: 0.50,
+      pan: 0.1
+    },
+    
+    {
+      attack: 0.01, // Color 5 State 1 (EMPTY BORDER)
+      attackRandOff: 0.2,
+      release: 0.01,
+      releaseRandOff: 0.2,
+      spread: 0.35,
+      speed: 4.,
       speedRandOff: 0.25,
       pan: 0.1
     },
     
     {
-      attack: 0.4, // Color 2 State 3 (MIXED or GRADIENT)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 1.,
-      speedRandOff: 0.25,
+      attack: 0.3, // Color 5 State 2 (FILL)
+      attackRandOff: 0.15,
+      release: 0.2,
+      releaseRandOff: 0.15,
+      spread: 0.05,
+      speed: 0.7,
+      speedRandOff: 0.15,
       pan: 0.1
     },
     
     {
-      attack: 0.4, // Color 3 State 1 (EMPTY BORDER)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 2.5,
-      speedRandOff: 0.25,
-      pan: 0.1
-    },
-    
-    {
-      attack: 0.4, // Color 3 State 2 (FILL)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 1.,
-      speedRandOff: 0.25,
-      pan: 0.1
-    },
-    
-    {
-      attack: 0.4, // Color 3 State 3 (MIXED or GRADIENT)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 1.,
-      speedRandOff: 0.25,
-      pan: 0.1
-    },
-    
-    {
-      attack: 0.4, // Color 4 State 1 (EMPTY BORDER)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 2.5,
-      speedRandOff: 0.25,
-      pan: 0.1
-    },
-    
-    {
-      attack: 0.4, // Color 4 State 2 (FILL)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 1.,
-      speedRandOff: 0.25,
-      pan: 0.1
-    },
-    
-    {
-      attack: 0.4, // Color 4 State 3 (MIXED or GRADIENT)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 1.,
-      speedRandOff: 0.25,
-      pan: 0.1
-    },
-    
-    {
-      attack: 0.4, // Color 5 State 1 (EMPTY BORDER)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 2.5,
-      speedRandOff: 0.25,
-      pan: 0.1
-    },
-    
-    {
-      attack: 0.4, // Color 5 State 2 (FILL)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 1.,
-      speedRandOff: 0.25,
-      pan: 0.1
-    },
-    
-    {
-      attack: 0.4, // Color 5 State 3 (MIXED or GRADIENT)
-      attackRandOff: 0.1,
-      release: 0.4,
-      releaseRandOff: 0.1,
-      spread: 0.2,
-      speed: 1.,
-      speedRandOff: 0.25,
+      attack: 0.1, // Color 5 State 3 (MIXED or GRADIENT)
+      attackRandOff: 0.05,
+      release: 0.5,
+      releaseRandOff: 0.05,
+      spread: 0.3,
+      speed: 1.5,
+      speedRandOff: 0.50,
       pan: 0.1
     }
   

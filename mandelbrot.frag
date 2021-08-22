@@ -46,10 +46,10 @@ void main() {
 
     float nResult = result / 255.;
 
-    vec4 color = texture2D(tex0, vec2(mod((nResult * 2.), 1.), 0.));
+    vec4 color = texture2D(tex0, vec2((nResult * 1.), 0.));
 
     gl_FragColor = vec4(color.rgb, 1.);
 
     }
 
-}
+} 
