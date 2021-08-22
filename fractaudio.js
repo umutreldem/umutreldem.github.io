@@ -22,6 +22,7 @@ const compressor = new tuna.Compressor({
     automakeup: false, //true/false
     bypass: 0
 });
+compressor.makeupGain.value = 0.4;
 compressor.connect(master)
  
 
@@ -40,12 +41,13 @@ const convolver = new tuna.Convolver({
 convolver.connect(compressor);
 
 const filter = new tuna.Filter({
-    frequency: 800,         //20 to 22050
+    frequency: 1800,         //20 to 22050
     Q: 10,                   //0.001 to 100
     gain: 0,                //-40 to 40 (in decibels)
     filterType: "lowpass",  //lowpass, highpass, bandpass, lowshelf, highshelf, peaking, notch, allpass
-    bypass: true
+    bypass: 0
 });
+filter.frequency.value = 1000.;
 filter.connect(convolver);
 
 

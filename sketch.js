@@ -583,7 +583,7 @@ function makeGrain(arr) { // This will look at the colorBalance array and create
     curColorAmount = sqrt(1 - pow(curColorAmount - 1, 2)); // easeOutCirc easing function
     curColorAmount = map(curColorAmount, 0., 1., 0.25, 0.5); // General downscaling.
 
-    //console.log(curColorAmount);
+    console.log(curColorAmount);
 
     mandelVoice.play(curColor, xPos, curColorAmount, grainParams[result]);
   }
