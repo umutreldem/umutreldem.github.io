@@ -32,7 +32,7 @@ void main() {
     vec2 z = vec2(0, 0);
     float result = 0.;
 
-    for(float iter = 0.; iter < 255.; iter++) {
+    for(float iter = 0.; iter < 500.; iter++) {
         z = vec2(z.x * z.x - z.y * z.y, 2. * z.x * z.y) + c;
         result = iter;
         if(length(z) > 2.) break;
@@ -46,9 +46,9 @@ void main() {
 
     float nResult = result / 255.;
 
-    vec4 color = texture2D(tex0, vec2((nResult * 1.), 0.));
+    vec4 color = texture2D(tex0, vec2((nResult * 1.), 0.));  // vec4 color = texture2D(tex0, vec2((nResult * 1.), 0.)); 
 
-    gl_FragColor = vec4(color.rgb, 1.);
+    gl_FragColor = color;
 
     }
 

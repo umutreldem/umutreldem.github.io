@@ -29,8 +29,8 @@ compressor.connect(master)
 // 
 
 const convolver = new tuna.Convolver({
-    highCut: 5900,                         //20 to 22050
-    lowCut: 100,                             //20 to 22050
+    highCut: 4000,                         //20 to 22050
+    lowCut: 0,                             //20 to 22050
     dryLevel: 1,                            //0 to 1+
     wetLevel: 1,                            //0 to 1+
     level: 1,                               //0 to 1+, adjusts total output of both wet and dry
@@ -44,13 +44,13 @@ const filter = new tuna.Filter({
     Q: 10,                   //0.001 to 100
     gain: 0,                //-40 to 40 (in decibels)
     filterType: "lowpass",  //lowpass, highpass, bandpass, lowshelf, highshelf, peaking, notch, allpass
-    bypass: 0
+    bypass: true
 });
 filter.connect(convolver);
 
 
 
-const delay = new tuna.Delay(); // Delay node
+const delay = new tuna.Delay({bypass: true}); // Delay node
 delay.connect(filter);
 
 const phaserBank = Array(5);
@@ -226,7 +226,7 @@ request1.onload = function() {
 request1.send();
 
 const request2 = new XMLHttpRequest();
-request2.open('GET', 'audio/Mes.wav', true);
+request2.open('GET', 'audio/vs_flute_q2.wav', true);
 request2.responseType = 'arraybuffer';
 request2.onload = function() {
     context.decodeAudioData(request2.response, function(b){
@@ -256,7 +256,7 @@ request3.onload = function() {
 request3.send();
 
 const request4 = new XMLHttpRequest();
-request4.open('GET', 'audio/vs_flute_q2.wav', true);
+request4.open('GET', 'audio/Mes.wav', true);
 request4.responseType = 'arraybuffer';
 request4.onload = function() {
     context.decodeAudioData(request4.response, function(b){

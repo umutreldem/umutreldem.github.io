@@ -1,4 +1,4 @@
-console.log("Fractal soundscape V4.8")
+console.log("Fractal soundscape V4.9")
 
 let mandelbrot, downsample, analysis; // Contain, downsample, analyse, and run the shader.
 
@@ -28,7 +28,7 @@ let quality = 1; // Mandelbrot render quality, goes from 1 to 4.
 
 let screenLength; // Length of screen.
 
-let palette = [] // RGB Color values of the palette (Array)
+let palette = new Array(5) // RGB Color values of the palette (Array)
 let c1, c2, c3, c4, c5; // LAB Color values of the palette
 
 
@@ -68,7 +68,7 @@ function setup() {
   setAttributes('antialias', false);
   mandelbrot = createGraphics(width/quality, height/quality, WEBGL); // Graphics buffer to calculate the shader (THIS HAS THE RESOLUTION OF THE RENDER)
   analysis = createGraphics(100, 100, WEBGL); // Graphics buffers to downsample and analyze the shader
-  
+
   mandelbrot.pixelDensity(1);
   analysis.pixelDensity(1);
 
@@ -126,6 +126,9 @@ function setup() {
 function draw() {
 
   //frameRate(30);
+  mandelbrot.noSmooth();
+  analysis.noSmooth();
+  noSmooth();
 
   checkSmoothing(); // Smooth the data
   checkAspectRatio(); // Fix aspect ratio
@@ -137,9 +140,12 @@ function draw() {
   mandelShader.setUniform("Angle", smoothAngle); 
   mandelShader.setUniform("tex0", colorPalette); 
 
+  
+
   mandelbrot.rect(0, 0, mandelbrot.width, mandelbrot.height); //Display the shader in the graphics buffer, and then display that on the main canvas.
   image(mandelbrot, 0, 0, width, height); 
   
+
 
   if(frameCount%10 === 0) {
 
@@ -164,12 +170,11 @@ function draw() {
 
 
 
-  if(frameCount%60 === 0) {
+  if(frameCount%30 === 0) {
 
     generateGrains();
 
   }
-
 
   setPhaserParams(BFGBank, map(mandelDepth, 0, 1500, 0., 1.,true));
   setConvolverParams(mandelDepth);
@@ -182,7 +187,7 @@ function draw() {
 
         stroke(0);
         strokeWeight(10);
-        fill(palette[floor(i/3)]);
+        fill(palette[floor(i/3)].getValues(mandelAngle, 255));
         textSize(50);
 
         text(amount.toFixed(2), 150 + (floor(i/3) * (width/5)), height - 20 - ((i%3) * 50));
@@ -294,8 +299,10 @@ function checkInput() {
 
     if(keyIsDown(81)) { // Q & R = rotate
       mandelAngle -= 0.01;
+      refreshColors(colorPalette);
     } else if(keyIsDown(69)) {
       mandelAngle += 0.01;
+      refreshColors(colorPalette);
     }
 
   }
@@ -308,6 +315,7 @@ function keyTyped() {
 
     if(keyCode === 32) { //Spacebar = Reset position
       resetPosition();
+      refreshColors(colorPalette);
     }
 
     if(keyCode === 67) { // C = Randomize colors
@@ -332,19 +340,47 @@ function keyTyped() {
 
 function loadColors(buf) {
 
-  buf.strokeWeight(1);
 
   for(let i = 0; i < 5; i++) {
 
-    randomCol = [random(255), random(255), random(255)]; // Generate random color and load it to the color variable
-    palette[i] = randomCol;
-    eval('c' + (i + 1)  + '= rgb2lab(randomCol)'); 
+    palette[i] = new BFG(3);
     
-    buf.stroke(randomCol);
-    buf.point([i], 0);
+    let newCol = palette[i].getValues(0, 255);
+    newCol.push(255); // Alpha
 
+    eval('c' + (i + 1)  + '= rgb2lab(newCol)'); 
+
+    buf.set(i, 0, newCol);
   }
 
+  buf.updatePixels();
+
+} 
+
+function refreshColors(buf) {
+
+  buf.strokeWeight(1);
+
+  for(let i = 0; i < 5; i++) {
+    
+    let scaledAngle = mandelAngle * 0.25;
+    let newCol = palette[i].getValues(scaledAngle, 255);
+    newCol.push(255); // Alpha
+
+    //console.log(newCol);
+
+    eval('c' + (i + 1)  + '= rgb2lab(newCol)'); 
+    
+    
+    buf.set(i, 0, newCol);
+
+    buf.updatePixels();
+
+    // buf.background(0);
+    // buf.stroke(newCol);
+    // buf.point([i], 0);
+
+  }
 
 } 
 
@@ -478,7 +514,7 @@ function setPhaserParams(bank, val) { // Takes BFG bank and current time value, 
     let newParams = bank[i].getValues(val);
     
     let freq = newParams[0] * 4000.;
-    let rate = newParams[1] * 2.;
+    let rate = newParams[1] * 1.;
     let depth = newParams[2] * 0.5;
     let stereoPhase = newParams[3] * 100.;
 
@@ -508,11 +544,11 @@ function setConvolverParams(depth) { // Takes mandelbrot depth (0 - 500) and set
 function generateGrains() {
 
   let amount = map(colorAmount[5], 0., 1., 5., 10.);
-
+  amount = floor(amount);
   //makeGrain(colorBalance);
 
   for(let i = 0; i < amount; i++) {
-    let delay = random(0, 1000);
+    let delay = random(0, 3000);
     setTimeout(makeGrain, delay, colorBalance);
   }
 
@@ -540,11 +576,12 @@ function makeGrain(arr) { // This will look at the colorBalance array and create
     result--; // Fixing index number to start from 0 and play grain.
     //console.log(result);
 
-    let xPos = (mandelDepth % 1500.) / 1500.;
+    let xPos = map(mandelDepth, 0., 1000., 0., 0.8, true);
+
     let curColor = floor(result/3);
     let curColorAmount = colorAmount[curColor];
     curColorAmount = sqrt(1 - pow(curColorAmount - 1, 2)); // easeOutCirc easing function
-    curColorAmount = map(curColorAmount, 0., 1., 0.3, 0.7); // General downscaling.
+    curColorAmount = map(curColorAmount, 0., 1., 0.25, 0.5); // General downscaling.
 
     //console.log(curColorAmount);
 
@@ -576,7 +613,7 @@ function initiateGrainParams() {
       releaseRandOff: 0.15,
       spread: 0.05,
       speed: 0.15,
-      speedRandOff: 0.15,
+      speedRandOff: 0.1,
       pan: 0.1
     },
     
@@ -603,12 +640,12 @@ function initiateGrainParams() {
     },
     
     {
-      attack: 0.3, // Color 2 State 2 (FILL)
+      attack: 0.1, // Color 2 State 2 (FILL)
       attackRandOff: 0.15,
       release: 0.2,
       releaseRandOff: 0.15,
       spread: 0.05,
-      speed: 0.7,
+      speed: 0.5,
       speedRandOff: 0.15,
       pan: 0.1
     },
@@ -616,11 +653,11 @@ function initiateGrainParams() {
     {
       attack: 0.1, // Color 2 State 3 (MIXED or GRADIENT)
       attackRandOff: 0.05,
-      release: 0.5,
+      release: 0.3,
       releaseRandOff: 0.05,
       spread: 0.3,
-      speed: 1.5,
-      speedRandOff: 0.50,
+      speed: 0.7,
+      speedRandOff: 0.2,
       pan: 0.1
     },
     
@@ -858,12 +895,12 @@ class BFG {
 
   }
 
-  getValues(step) {
+  getValues(step, mult = 1) {
 
     let result = [];
 
     for(let i = 0; i < this.offset.length; i++) {
-      result[i] = noise(this.offset[i] + step);
+      result[i] = noise(this.offset[i] + step) * mult;
     }
 
     return result;
