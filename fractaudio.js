@@ -30,7 +30,7 @@ compressor.connect(master)
 // 
 
 const convolver = new tuna.Convolver({
-    highCut: 4000,                         //20 to 22050
+    highCut: 2000,                         //20 to 22050
     lowCut: 0,                             //20 to 22050
     dryLevel: 1,                            //0 to 1+
     wetLevel: 1,                            //0 to 1+
@@ -47,18 +47,15 @@ const filter = new tuna.Filter({
     filterType: "lowpass",  //lowpass, highpass, bandpass, lowshelf, highshelf, peaking, notch, allpass
     bypass: 0
 });
-filter.frequency.value = 1000.;
+filter.frequency.value = 2000.;
 filter.connect(convolver);
 
 
 
-const delay = new tuna.Delay({bypass: true}); // Delay node
-delay.connect(filter);
-
 const phaserBank = Array(5);
 for(let i = 0; i < phaserBank.length; i++) {
-    phaserBank[i] = new tuna.Phaser();
-    phaserBank[i].connect(delay);
+    phaserBank[i] = new tuna.Phaser({bypass: false});
+    phaserBank[i].connect(filter);
 }
 
 
@@ -138,6 +135,9 @@ function Grain(buffer, positionx, positiony, params, bufferInd) {
     // Amplitude calculate and update
     this.positiony = positiony;
     this.amp = this.positiony;
+    this.amp *= params.amp;
+
+    //console.log(this.amp);
 
     //Envelope parameters
     this.attack = params.attack;
@@ -156,7 +156,7 @@ function Grain(buffer, positionx, positiony, params, bufferInd) {
     }
     this.spread = params.spread * (buffer.duration);
 
-    this.randomoffset = (Math.random() * this.spread) - (this.spread/2);
+    this.randomoffset = (Math.random() * this.spread) - (this.spread/2.);
 
     //Setting the envelope
     this.source.start(this.now, Math.abs(this.offset + this.randomoffset), this.attack + this.release);
@@ -183,7 +183,6 @@ function Grain(buffer, positionx, positiony, params, bufferInd) {
 function Voice() {
     
     this.grains = [];
-    this.graincount = 0;
     var that = this; // For scope issues
 
     this.play = function(bufferInd, mouseX, mouseY, params) {
@@ -194,11 +193,6 @@ function Voice() {
         this.g = new Grain(gBuffer, mouseX, mouseY, params, bufferInd);
         //Pushed to grain array
         that.grains[that.graincount] = this.g;
-        that.graincount++;
-
-        if(that.graincount > 30) {
-            that.graincount = 0;
-        }
     }
 }
 
@@ -213,7 +207,7 @@ function Voice() {
 
 // Loading the audio files into buffers
 const request1 = new XMLHttpRequest();
-request1.open('GET', 'audio/ocarina1.wav', true);
+request1.open('GET', 'audio/vs_flute_q2.mp3', true);
 request1.responseType = 'arraybuffer';
 request1.onload = function() {
     context.decodeAudioData(request1.response, function(b){
@@ -228,7 +222,7 @@ request1.onload = function() {
 request1.send();
 
 const request2 = new XMLHttpRequest();
-request2.open('GET', 'audio/vs_flute_q2.wav', true);
+request2.open('GET', 'audio/ocarina1.mp3', true);
 request2.responseType = 'arraybuffer';
 request2.onload = function() {
     context.decodeAudioData(request2.response, function(b){
@@ -258,7 +252,7 @@ request3.onload = function() {
 request3.send();
 
 const request4 = new XMLHttpRequest();
-request4.open('GET', 'audio/Mes.wav', true);
+request4.open('GET', 'audio/harp_riff.mp3', true);
 request4.responseType = 'arraybuffer';
 request4.onload = function() {
     context.decodeAudioData(request4.response, function(b){
@@ -273,7 +267,7 @@ request4.onload = function() {
 request4.send();
 
 const request5 = new XMLHttpRequest();
-request5.open('GET', 'audio/tone2.wav', true);
+request5.open('GET', 'audio/vs_carbon_loop2.mp3', true);
 request5.responseType = 'arraybuffer';
 request5.onload = function() {
     context.decodeAudioData(request5.response, function(b){

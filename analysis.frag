@@ -1,7 +1,7 @@
 
 
 #ifdef GL_ES
-precision highp float;
+precision lowp float;
 #endif
 
 uniform vec2 u_resolution;
@@ -13,6 +13,13 @@ uniform vec3 Color3;
 uniform vec3 Color4;
 uniform vec3 Color5;
 uniform sampler2D tex0; // Mandelbrot shader to analyze
+uniform vec2 res;
+
+vec2 nearest(vec2 uv, vec2 res) {
+
+    return floor(uv * (res - 1.)) / (res - 1.);
+
+}
 
 vec3 rgb2lab(vec3 col) {
 
@@ -71,10 +78,15 @@ bool isBlack(vec3 col) {
 void main() {
 
     vec2 st = gl_FragCoord.xy/u_resolution;
-    float stepX = 1./u_resolution.x;
-    float stepY = 1./u_resolution.y;
+    st = vec2(st.x, 1. - st.y); // Inverting Y axis
+    float stepX = 1./res.x;
+    float stepY = 1./res.y;
 
-    vec4 color = texture2D(tex0, st);
+    vec2 colorCoord = nearest(st, res);
+
+
+
+    vec4 color = texture2D(tex0, colorCoord);
     vec3 colorLAB = rgb2lab(color.rgb);
 
     float d1 = 0.;
@@ -152,6 +164,6 @@ void main() {
 
     }
 
-    gl_FragColor = vec4(thisCol, thisNeigh, 0., 0.);
+    gl_FragColor = vec4(thisCol, thisNeigh, 0., 1.);
 
 }

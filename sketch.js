@@ -1,4 +1,4 @@
-console.log("Fractal soundscape V4.9")
+console.log("Fractal soundscape V5")
 
 let mandelbrot, downsample, analysis; // Contain, downsample, analyse, and run the shader.
 
@@ -17,7 +17,7 @@ let smoothPos, smoothScale, smoothAngle; // Smoothing variables
 
 let colorBalance = []; // Array with increments for the amount of color/state per frame
 let colorAmount = [];
-
+const BFGSeeds = [[3, 7, 8785], [9811, 9707, 3801], [1518, 2008, 9707], [4728, 8147, 7475], [8417, 5, 108]];
 let grainParams; // Array with settings of grain parameters of each color/state
 let incr; // Amount of increment per pixel, for all pixels to add up to 1.
 
@@ -31,6 +31,9 @@ let screenLength; // Length of screen.
 let palette = new Array(5) // RGB Color values of the palette (Array)
 let c1, c2, c3, c4, c5; // LAB Color values of the palette
 
+let minGrain, maxGrain // Grain amount per iteration
+
+let tenth // 1/10 of width, to calculate the size of the mobile button
 
 let m_currentX; // Mobile uniforms
 let m_currentY;
@@ -67,14 +70,14 @@ function setup() {
   screenLength = sqrt(width*width + height*height);
   setAttributes('antialias', false);
   mandelbrot = createGraphics(width/quality, height/quality, WEBGL); // Graphics buffer to calculate the shader (THIS HAS THE RESOLUTION OF THE RENDER)
-  analysis = createGraphics(100, 100, WEBGL); // Graphics buffers to downsample and analyze the shader
+  analysis = createGraphics(mandelbrot.width/2, mandelbrot.height/2, WEBGL); // Graphics buffers to downsample and analyze the shader
 
   mandelbrot.pixelDensity(1);
   analysis.pixelDensity(1);
 
   incr = 1./(analysis.width*analysis.height);
 
-  downsample = createGraphics(100, 100);
+  downsample = createGraphics(mandelbrot.width/2, mandelbrot.height/2);
 
   downsample.pixelDensity(1);
 
@@ -86,8 +89,21 @@ function setup() {
   smoothScale = mandelScale;
   smoothAngle = 0.;
 
-  loadColors(colorPalette); // Loads palette with five random colors, also filling the c1-c5 variables.
+  loadColors(colorPalette, BFGSeeds); // Loads palette with five random colors, also filling the c1-c5 variables.
   colorPalette.loadPixels();
+
+
+  if(mobile) {
+
+    maxGrain = 30;
+    minGrain = 15;
+
+  } else {
+
+    maxGrain = 50;
+    minGrain = 20;
+
+  }
 
   grainParams = initiateGrainParams();
 
@@ -104,17 +120,35 @@ function setup() {
     };
     var hammer = new Hammer(document.body, options);
 
+    var doubletap = new Hammer.Tap({ event: 'doubletap', taps: 2, threshold: 50, posThreshold: 500, time: 500 });
+    var singletap = new Hammer.Tap();
+
+    hammer.add([doubletap, singletap]);
+	  doubletap.recognizeWith(singletap);
+    singletap.requireFailure(doubletap);
+
+    hammer.on("tap", screenTapped);
+    hammer.on("doubletap", (e) => {
+    
+      if(e.center.x < width - tenth && e.center.y < height - tenth) {
+        resetPosition();
+      }
+
+    });
+
     hammer.get('pan').set({direction: Hammer.DIRECTION_ALL, pointers: 0});
     hammer.get('pinch').set({enable: true, pointers: 2});
     hammer.get('rotate').set({enable: true});
 
     hammer.on('pan', panMove);
     hammer.on('panend', panMoveEnd); 
-    hammer.on('tap', resetPosition);
     hammer.on('pinch', pinchZoom);
     hammer.on('pinchend', pinchZoomEnd)
     hammer.on('rotate', pinchRotate);
     hammer.on('rotateend', pinchRotateEnd);
+
+
+
   }
 
 }
@@ -138,20 +172,22 @@ function draw() {
   mandelShader.setUniform("u_resolution", [mandelbrot.width, mandelbrot.height]);
   mandelShader.setUniform("Area", [smoothPos.x, smoothPos.y, scaleX, scaleY]); 
   mandelShader.setUniform("Angle", smoothAngle); 
+  mandelShader.setUniform("u_time", millis() / 1000.);
   mandelShader.setUniform("tex0", colorPalette); 
 
   
 
   mandelbrot.rect(0, 0, mandelbrot.width, mandelbrot.height); //Display the shader in the graphics buffer, and then display that on the main canvas.
   image(mandelbrot, 0, 0, width, height); 
-  
+  //image(colorPalette, 0, 0, 200, 200);
 
 
-  if(frameCount%10 === 0) {
+  if(frameCount%30 === 0) {
 
     analysis.shader(mandelAnalysis);
     mandelAnalysis.setUniform("u_resolution", [analysis.width, analysis.height]);
     mandelAnalysis.setUniform("tex0", downsample); 
+    mandelAnalysis.setUniform("res", [downsample.width, downsample.height]); 
     mandelAnalysis.setUniform("Color1", c1);
     mandelAnalysis.setUniform("Color2", c2);
     mandelAnalysis.setUniform("Color3", c3);
@@ -168,12 +204,23 @@ function draw() {
 
   }
 
+//image(analysis, 0, 0, width, height);
 
 
-  if(frameCount%30 === 0) {
+  if(mobile) {
 
-    generateGrains();
+    if(frameCount%60 === 0) {
 
+      generateGrains();
+
+    }
+
+  } else {
+    if(frameCount%30 === 0) {
+
+      generateGrains();
+
+    }
   }
 
   setPhaserParams(BFGBank, map(mandelDepth, 0, 1500, 0., 1.,true));
@@ -236,13 +283,35 @@ function draw() {
     
     fill(255, a);
     stroke(0, a);
+    strokeWeight(2);
     textSize(screenLength / 75);
     textStyle(NORMAL);
     textAlign(LEFT);
-    text("'Brief Gaze of the Infinite Maze’ is an interactive installation in which the viewer can explore an almost-infinite synaesthetic audiovisual space. \n \n Fractals are infinitely complex, never ending visual patterns. In this installation, each frame is turned into a soundscape in real time using an algorithm analyzing the perception of colors and shapes on the screen. \n \n The infinitely complex patterns turn into an ever-changing world of sound: Exploring the fractals creates complementary sonic events reflecting the viewer’s unique journey in this audiovisual world.", 50, 25, width/4, height);
+    text("'Brief Gaze of the Infinite Maze’ is an interactive installation where you can explore an almost-infinite synaesthetic audiovisual space. \n \n Fractals are infinitely complex, never ending visual patterns. In this installation, each frame is turned into a soundscape in real time using an algorithm analyzing your perception of colors and shapes on the screen. \n \n The infinitely complex patterns turn into an ever-changing world of sound: Exploring the fractals creates complementary sonic events reflecting your unique journey in this audiovisual world.", 50, height/20, width/4, height);
     textAlign(RIGHT);
-    text("CONTROLS: \n \n *Arrow keys - Move around \n *W/S - Zoom in/out \n *Q/E - Rotate left/right \n *Spacebar - Reset position/zoom", width - 50, 100);
+    
+    if(mobile) {
+      text("CONTROLS: \n \n Drag finger: Move around \n Pinch: Zoom in/out \n Rotate with two fingers: Rotate left/right \n Double tap: Reset \n Q Button: Change resolution \n\n\n Headphones are recommended \n for better experience. \n\n\n Created by \n Umut Eldem", width - 50, 100);
+    } else {
+      text("CONTROLS: \n \n Arrow keys: Move around \n W/S: Zoom in/out \n Q/E: Rotate left/right \n Spacebar: Reset position/zoom \n R: Change resolution \n\n\n Headphones are recommended \n for better experience. \n\n\n Created by \n Umut Eldem", width - 50, 100);
 
+    } 
+  }
+
+
+  if(mobile) { // Quality button for mobile
+    stroke(255);
+    strokeWeight(5);
+    fill(0, 200);
+
+    tenth = width/10;
+
+    rect(width - tenth, height - tenth, tenth, tenth);
+    textSize(tenth * 0.75);
+    textAlign(CENTER, CENTER);
+    strokeWeight(10);
+    fill(0);
+    text("Q", width - (tenth/2), height - (tenth/2));
   }
 
 }
@@ -297,7 +366,7 @@ function checkInput() {
       mandelDepth--;
     }
 
-    if(keyIsDown(81)) { // Q & R = rotate
+    if(keyIsDown(81)) { // Q & E = rotate
       mandelAngle -= 0.01;
       refreshColors(colorPalette);
     } else if(keyIsDown(69)) {
@@ -318,40 +387,33 @@ function keyTyped() {
       refreshColors(colorPalette);
     }
 
-    if(keyCode === 67) { // C = Randomize colors
-      loadColors(colorPalette);
-    } 
+    // if(keyCode === 68) { // D = Triger debug
+    //   debugMode = !debugMode;
+    // }
 
-    if(keyCode === 68) { // D = Triger debug
-      debugMode = !debugMode;
-    }
-
-    if(keyCode === 66) { // B == Change quality (1 - 2.5)
-      quality += 0.5;
-      if(quality > 2.5) {
-        quality = 1;
-      }
-      windowResized();
+    if(keyCode === 82) { // B == Change quality (1 - 2.5)
+      changeQuality();
     }
 
   }
 
 }
 
-function loadColors(buf) {
+function loadColors(buf, seeds) {
 
 
   for(let i = 0; i < 5; i++) {
 
-    palette[i] = new BFG(3);
-    
+    palette[i] = new BFG(3, seeds[i]);
     let newCol = palette[i].getValues(0, 255);
     newCol.push(255); // Alpha
+
 
     eval('c' + (i + 1)  + '= rgb2lab(newCol)'); 
 
     buf.set(i, 0, newCol);
   }
+  
 
   buf.updatePixels();
 
@@ -363,11 +425,9 @@ function refreshColors(buf) {
 
   for(let i = 0; i < 5; i++) {
     
-    let scaledAngle = mandelAngle * 0.25;
+    let scaledAngle = mandelAngle * 0.4; // The speed of the color change when rotating
     let newCol = palette[i].getValues(scaledAngle, 255);
     newCol.push(255); // Alpha
-
-    //console.log(newCol);
 
     eval('c' + (i + 1)  + '= rgb2lab(newCol)'); 
     
@@ -390,7 +450,7 @@ function getColorBalance(pix) {
   let arr = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 
-  for(let i = 0; i < pix.length; i += 4) {
+  for(let i = 0; i < pix.length; i += 4) { // Iterate through the R value of pixels
 
 
     switch(pix[i]) { // Color match for pixels 0.1/0.2/.../0.5 -> 25/51/76/102/128
@@ -423,7 +483,7 @@ function getColorBalance(pix) {
 
 function getColorState(arr, i, coli, colArr) {
 
-  switch(arr[i+1]) {
+  switch(arr[i+1]) { // Look at the G value of pixels
     case 25: case 26:
       colArr[coli + 0] += incr;
       break;
@@ -491,6 +551,10 @@ function windowResized() {
   screenLength = sqrt(width*width + height*height);
 
   mandelbrot.resizeCanvas(width/quality, height/quality);
+  analysis.resizeCanvas(mandelbrot.width/2, mandelbrot.height/2);
+  downsample.resizeCanvas(mandelbrot.width/2, mandelbrot.height/2);
+
+  incr = 1./(analysis.width*analysis.height);
 
 }
 
@@ -513,10 +577,10 @@ function setPhaserParams(bank, val) { // Takes BFG bank and current time value, 
 
     let newParams = bank[i].getValues(val);
     
-    let freq = newParams[0] * 4000.;
-    let rate = newParams[1] * 1.;
-    let depth = newParams[2] * 0.5;
-    let stereoPhase = newParams[3] * 100.;
+    let freq = newParams[0] * 500.;
+    let rate = newParams[1] * 0.5;
+    let depth = newParams[2] * 0.25;
+    let stereoPhase = newParams[3] * 20.;
 
     phaserBank[i].baseModulationFrequency = freq;
     phaserBank[i].rate = rate;
@@ -530,20 +594,23 @@ function setPhaserParams(bank, val) { // Takes BFG bank and current time value, 
 
 function setConvolverParams(depth) { // Takes mandelbrot depth (0 - 500) and sets wet/dry level of reverb.
 
-  let wet = map(depth, 0, 1300, 0.75, 0.4, true);
+  let wet = map(depth, 0, 1200, 0.5, 0.1, true);
   let dry = 1. - wet;
 
 
   convolver.dryLevel = dry;
   convolver.wetLevel = wet;
 
+ 
 
 }
 
 
 function generateGrains() {
 
-  let amount = map(colorAmount[5], 0., 1., 5., 10.);
+  let maxColor = max(colorAmount[0], colorAmount[1], colorAmount[2], colorAmount[3], colorAmount[4]);
+  let amount = map(maxColor, 0., 1., maxGrain, minGrain);
+  //console.log(amount);
   amount = floor(amount);
   //makeGrain(colorBalance);
 
@@ -556,36 +623,48 @@ function generateGrains() {
 
 function makeGrain(arr) { // This will look at the colorBalance array and create an appropriate grain according to the current chances
   
-  let gChance = random(); 
-  let acc = 0;
+  let gChance = Math.random(); 
+  let acc = 0.;
   let result = 0;
 
   for(let i = 0; i < arr.length; i++) { //Chances range from 0.-1, accumulating on top of each other. 
 
     acc += arr[i];
+
     if(gChance < acc) { // If gChance is smaller than the current chance (falling in the threshold, it will chance result to that type.
+      
       result = i + 1; // 0 -> Nothing happens, 1 - 15 -> Appropriate color/status grain. 
       break;
-    }
 
+    }
   }
  
 
 
   if(result > 0) {
     result--; // Fixing index number to start from 0 and play grain.
-    //console.log(result);
 
-    let xPos = map(mandelDepth, 0., 1000., 0., 0.8, true);
+    let xPos = map(mandelDepth, 0., 1500., 0., 0.9, true);
+    let mandelSine = map(mandelDepth, 0., 1500., 0., PI, true);
+    mandelSine = Math.sin(mandelSine) * (colorAmount[5] * 20.);
+
 
     let curColor = floor(result/3);
-    let curColorAmount = colorAmount[curColor];
-    curColorAmount = sqrt(1 - pow(curColorAmount - 1, 2)); // easeOutCirc easing function
-    curColorAmount = map(curColorAmount, 0., 1., 0.25, 0.5); // General downscaling.
+    if(true) { // 
+      let curColorAmount = colorBalance[result];
+      //curColorAmount *= curColorAmount
+      //curColorAmount * mandelSine;
 
-    console.log(curColorAmount);
+      //curColorAmount = Math.min(curColorAmount, 0.8);
+      //curColorAmount = sqrt(1 - pow(curColorAmount - 1, 2)); // easeOutCirc easing function
+      //curColorAmount *= curColorAmount;
+      //curColorAmount = -1. * (Math.cos(Math.PI * curColorAmount) - 1.) / 2.;
+      //curColorAmount = map(curColorAmount, 0., 1., 0.1, 0.5); // General downscaling.
 
-    mandelVoice.play(curColor, xPos, curColorAmount, grainParams[result]);
+      //console.log(curColorAmount);
+
+      mandelVoice.play(curColor, xPos, curColorAmount, grainParams[result]);
+    }
   }
 
 
@@ -597,90 +676,98 @@ function initiateGrainParams() {
   let params = [
     {
       attack: 0.01, // Color 1 State 1 (EMPTY BORDER)
-      attackRandOff: 0.2,
+      attackRandOff: 0.01,
       release: 0.01,
-      releaseRandOff: 0.2,
+      releaseRandOff: 0.01,
       spread: 0.35,
       speed: 4.,
       speedRandOff: 0.25,
-      pan: 0.1
+      pan: 0.1,
+      amp: 1.
     },
     
     {
-      attack: 0.3, // Color 1 State 2 (FILL)
+      attack: 0.75, // Color 1 State 2 (FILL)
       attackRandOff: 0.15,
-      release: 0.2,
+      release: 0.75,
       releaseRandOff: 0.15,
       spread: 0.05,
-      speed: 0.15,
+      speed: 0.35,
       speedRandOff: 0.1,
-      pan: 0.1
+      pan: 0.1,
+      amp: 0.2
     },
     
     {
       attack: 0.1, // Color 1 State 3 (MIXED or GRADIENT)
       attackRandOff: 0.05,
-      release: 0.5,
+      release: 0.1,
       releaseRandOff: 0.05,
-      spread: 0.3,
-      speed: 1.5,
+      spread: 0.01,
+      speed: 1.,
       speedRandOff: 0.50,
-      pan: 0.1
+      pan: 0.1,
+      amp: 1.
     },
     
     {
       attack: 0.01, // Color 2 State 1 (EMPTY BORDER)
-      attackRandOff: 0.2,
+      attackRandOff: 0.01,
       release: 0.01,
-      releaseRandOff: 0.2,
+      releaseRandOff: 0.01,
       spread: 0.35,
-      speed: 4.,
+      speed: 2.5,
       speedRandOff: 0.25,
-      pan: 0.1
+      pan: 0.1,
+      amp: 1.
     },
     
     {
-      attack: 0.1, // Color 2 State 2 (FILL)
-      attackRandOff: 0.15,
-      release: 0.2,
-      releaseRandOff: 0.15,
-      spread: 0.05,
+      attack: 0.75, // Color 2 State 2 (FILL)
+      attackRandOff: 0.01,
+      release: 0.75,
+      releaseRandOff: 0.01,
+      spread: 0.1,
       speed: 0.5,
-      speedRandOff: 0.15,
-      pan: 0.1
+      speedRandOff: 0.1,
+      pan: 0.1,
+      amp: 0.1
     },
     
     {
       attack: 0.1, // Color 2 State 3 (MIXED or GRADIENT)
-      attackRandOff: 0.05,
-      release: 0.3,
-      releaseRandOff: 0.05,
-      spread: 0.3,
+      attackRandOff: 0.01,
+      release: 0.1,
+      releaseRandOff: 0.01,
+      spread: 0.15,
       speed: 0.7,
       speedRandOff: 0.2,
-      pan: 0.1
+      pan: 0.1,
+      amp: 0.5
     },
     
     {
       attack: 0.01, // Color 3 State 1 (EMPTY BORDER)
-      attackRandOff: 0.2,
+      attackRandOff: 0.01,
       release: 0.01,
-      releaseRandOff: 0.2,
+      releaseRandOff: 0.01,
       spread: 0.35,
       speed: 4.,
       speedRandOff: 0.25,
-      pan: 0.1
+      pan: 0.1,
+      amp: 1.
     },
     
     {
-      attack: 0.3, // Color 3 State 2 (FILL)
-      attackRandOff: 0.15,
-      release: 0.2,
-      releaseRandOff: 0.15,
+      attack: 0.75, // Color 3 State 2 (FILL)
+      attackRandOff: 0.05,
+      release: 0.75,
+      releaseRandOff: 0.05,
       spread: 0.05,
-      speed: 0.7,
+      speed: 0.8,
       speedRandOff: 0.15,
-      pan: 0.1
+      pan: 0.1,
+      amp: 0.1
     },
     
     {
@@ -688,82 +775,143 @@ function initiateGrainParams() {
       attackRandOff: 0.05,
       release: 0.5,
       releaseRandOff: 0.05,
-      spread: 0.3,
-      speed: 1.5,
+      spread: 0.01,
+      speed: 1.,
       speedRandOff: 0.50,
-      pan: 0.1
+      pan: 0.1,
+      amp: 0.75
     },
     
     {
       attack: 0.01, // Color 4 State 1 (EMPTY BORDER)
-      attackRandOff: 0.2,
+      attackRandOff: 0.01,
       release: 0.01,
-      releaseRandOff: 0.2,
+      releaseRandOff: 0.01,
       spread: 0.35,
       speed: 4.,
       speedRandOff: 0.25,
-      pan: 0.1
+      pan: 0.1,
+      amp: 1.
     },
     
     {
-      attack: 0.3, // Color 4 State 2 (FILL)
-      attackRandOff: 0.15,
-      release: 0.2,
-      releaseRandOff: 0.15,
+      attack: 0.75, // Color 4 State 2 (FILL)
+      attackRandOff: 0.05,
+      release: 0.75,
+      releaseRandOff: 0.05,
       spread: 0.05,
       speed: 0.7,
       speedRandOff: 0.15,
-      pan: 0.1
+      pan: 0.1,
+      amp: 0.2
     },
     
     {
       attack: 0.1, // Color 4 State 3 (MIXED or GRADIENT)
-      attackRandOff: 0.05,
+      attackRandOff: 0.01,
       release: 0.5,
-      releaseRandOff: 0.05,
-      spread: 0.3,
-      speed: 1.5,
-      speedRandOff: 0.50,
-      pan: 0.1
+      releaseRandOff: 0.01,
+      spread: 0.1,
+      speed: 1.,
+      speedRandOff: 0.1,
+      pan: 0.1,
+      amp: 0.5
     },
     
     {
       attack: 0.01, // Color 5 State 1 (EMPTY BORDER)
-      attackRandOff: 0.2,
+      attackRandOff: 0.01,
       release: 0.01,
-      releaseRandOff: 0.2,
+      releaseRandOff: 0.01,
       spread: 0.35,
       speed: 4.,
       speedRandOff: 0.25,
-      pan: 0.1
+      pan: 0.1,
+      amp: 1.
     },
     
     {
-      attack: 0.3, // Color 5 State 2 (FILL)
-      attackRandOff: 0.15,
-      release: 0.2,
-      releaseRandOff: 0.15,
+      attack: 0.75, // Color 5 State 2 (FILL)
+      attackRandOff: 0.01,
+      release: 0.75,
+      releaseRandOff: 0.101,
       spread: 0.05,
       speed: 0.7,
       speedRandOff: 0.15,
-      pan: 0.1
+      pan: 0.1,
+      amp: 0.2
     },
     
     {
-      attack: 0.1, // Color 5 State 3 (MIXED or GRADIENT)
-      attackRandOff: 0.05,
-      release: 0.5,
-      releaseRandOff: 0.05,
+      attack: 0.05, // Color 5 State 3 (MIXED or GRADIENT)
+      attackRandOff: 0.1,
+      release: 0.01,
+      releaseRandOff: 0.5,
       spread: 0.3,
-      speed: 1.5,
-      speedRandOff: 0.50,
-      pan: 0.1
+      speed: 2.,
+      speedRandOff: 1.,
+      pan: 0.1,
+      amp: 0.25
     }
   
   ];
 
   return params;
 
+}
+
+
+function changeQuality() {
+  quality += 0.5;
+  if(quality > 2.5) {
+    quality = 1;
+  }
+
+  if(mobile) {
+
+    switch(quality) {
+      case 1:
+        maxGrain = 30;
+        minGrain = 15;
+        break;
+      case 1.5:
+        maxGrain = 20;
+        minGrain = 10;
+        break;
+      case 2:
+        maxGrain = 15;
+        minGrain = 7;
+        break;
+      case 2.5:
+        maxGrain = 10;
+        minGrain = 5;
+        break;
+    }
+
+  } else {  
+    
+    switch(quality) {
+      case 1:
+        maxGrain = 40;
+        minGrain = 20;
+        break;
+      case 1.5:
+        maxGrain = 30;
+        minGrain = 15;
+        break;
+      case 2:
+        maxGrain = 25;
+        minGrain = 10;
+        break;
+      case 2.5:
+        maxGrain = 20;
+        minGrain = 5;
+        break;
+    }
+
+  }
+
+  windowResized();
 }
 
 
@@ -776,6 +924,14 @@ window.mobileAndTabletCheck = function() {
 
 
 // Mobile controls
+function screenTapped(e) {
+
+  if(e.center.x > width - tenth && e.center.y > height - tenth) {
+    changeQuality();
+  }
+}
+
+
 function pinchZoom(e) {
   
   panMove(e);
@@ -805,7 +961,7 @@ function pinchZoom(e) {
 function pinchZoomEnd(e) {
   m_currentScale = undefined;
 
-  console.log('pinch end');
+  //console.log('pinch end');
 
 } 
 
@@ -819,6 +975,7 @@ function pinchRotate(e) {
 
     if(e.rotation > m_currentRot) {
       mandelAngle += 0.1 * diffR;
+      
     } else if(e.rotation < m_currentRot) {
       mandelAngle -= 0.1 * diffR;
     }
@@ -885,24 +1042,40 @@ function panMoveEnd(e) {
 
 class BFG {
 
-  constructor(planes) {
+  constructor(planes, seed) {
 
     this.offset = Array(planes);
 
-    for(let i = 0; i < this.offset.length; i++) {
-      this.offset[i] = random(0, 100);
+    if(!seed) { // if undefined
+      this.seed = Array(planes);
+      this.noseed = true;
+    } else {
+      this.seed = seed;
+      this.noseed = false;
     }
+    
+
+    for(let i = 0; i < this.offset.length; i++) {
+      
+      this.offset[i] = 0.;
+
+      if(this.noseed) {
+      this.seed[i] = random(0, 100);
+      }
+    }
+    
 
   }
 
   getValues(step, mult = 1) {
+ 
 
     let result = [];
 
     for(let i = 0; i < this.offset.length; i++) {
+      noiseSeed(this.seed[i]);
       result[i] = noise(this.offset[i] + step) * mult;
     }
-
     return result;
 
   }
