@@ -40,6 +40,7 @@ let m_currentY;
 let m_currentRot;
 let m_currentScale;
 
+
 let startFlag = false; // Flag to start the installation.
 
 const mandelVoice = new Voice(); // Granular synth
@@ -92,6 +93,7 @@ function setup() {
   loadColors(colorPalette, BFGSeeds); // Loads palette with five random colors, also filling the c1-c5 variables.
   colorPalette.loadPixels();
 
+  textFont('Verdana');
 
   if(mobile) {
 
@@ -293,7 +295,7 @@ function draw() {
     if(mobile) {
       text("CONTROLS: \n \n Drag finger: Move around \n Pinch: Zoom in/out \n Rotate with two fingers: Rotate left/right \n Double tap: Reset \n Q Button: Change resolution \n\n\n Headphones are recommended \n for better experience. \n\n\n Created by \n Umut Eldem", width - 50, 100);
     } else {
-      text("CONTROLS: \n \n Arrow keys: Move around \n W/S: Zoom in/out \n Q/E: Rotate left/right \n Spacebar: Reset position/zoom \n R: Change resolution \n\n\n Headphones are recommended \n for better experience. \n\n\n Created by \n Umut Eldem", width - 50, 100);
+      text("CONTROLS: \n \n Arrow keys: Move around \n W/S: Zoom in/out \n Q/E: Rotate left/right \n Spacebar: Reset position/zoom \n R: Change resolution \n\n\n Headphones are recommended \n for better experience. \n\n\n Created by \n Umut Eldem \n\n umutreldem.com", width - 50, 100);
 
     } 
   }

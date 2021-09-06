@@ -14,7 +14,7 @@ master.connect(context.destination);
 
 const compressor = new tuna.Compressor({
     threshold: -20,    //-100 to 0
-    makeupGain: 0.,     //0 and up (in decibels)
+    makeupGain: 1.,     //0 and up (in decibels)
     attack: 1,         //0 to 1000
     release: 250,      //0 to 3000
     ratio: 4,          //1 to 20
@@ -22,7 +22,6 @@ const compressor = new tuna.Compressor({
     automakeup: false, //true/false
     bypass: 0
 });
-compressor.makeupGain.value = 0.4;
 compressor.connect(master)
  
 
