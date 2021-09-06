@@ -1,4 +1,4 @@
-console.log("Fractal soundscape V5")
+console.log("Fractal soundscape V5.1")
 
 let mandelbrot, downsample, analysis; // Contain, downsample, analyse, and run the shader.
 
