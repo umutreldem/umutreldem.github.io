@@ -8,19 +8,17 @@ const bufferBank = Array(5); // Main buffers & convolution buffer
 let convBuffer; 
 
 const tuna = new Tuna(context);
+Tone.context = context;
 
 const master = context.createGain(); // Master gain node, connected to the destination
 master.connect(context.destination); 
 
-const compressor = new tuna.Compressor({
-    threshold: -20,    //-100 to 0
-    makeupGain: 1.,     //0 and up (in decibels)
-    attack: 1,         //0 to 1000
-    release: 250,      //0 to 3000
-    ratio: 4,          //1 to 20
+const compressor = new Tone.Compressor({
+    threshold: -10,    //-100 to 0
+    attack: 0.01,         //0 to 1000
+    release: 0.25,      //0 to 3000
+    ratio: 12,          //1 to 20
     knee: 5,           //0 to 40
-    automakeup: false, //true/false
-    bypass: 0
 });
 compressor.connect(master)
  
@@ -28,22 +26,23 @@ compressor.connect(master)
 // const convolver = context.createConvolver(); // Convolver node
 // 
 
-const convolver = new tuna.Convolver({
-    highCut: 2000,                         //20 to 22050
-    lowCut: 0,                             //20 to 22050
-    dryLevel: 1,                            //0 to 1+
-    wetLevel: 1,                            //0 to 1+
-    level: 1,                               //0 to 1+, adjusts total output of both wet and dry
-    impulse: "audio/HS.wav",    //the path to your impulse response
-    bypass: 0
-});
-convolver.connect(compressor);
+// const convolver = new tuna.Convolver({
+//     highCut: 2000,                         //20 to 22050
+//     lowCut: 0,                             //20 to 22050
+//     dryLevel: 1,                            //0 to 1+
+//     wetLevel: 1,                            //0 to 1+
+//     level: 1,                               //0 to 1+, adjusts total output of both wet and dry
+//     impulse: "audio/HS.wav",    //the path to your impulse response
+//     bypass: 0
+// });
+const convolver = new Tone.Convolver('audio/HS.wav');
+Tone.connect(convolver, compressor);
 
-const filter = new tuna.Filter({
+const filter = new Tone.Filter({
     frequency: 1800,         //20 to 22050
     Q: 10,                   //0.001 to 100
     gain: 0,                //-40 to 40 (in decibels)
-    filterType: "lowpass",  //lowpass, highpass, bandpass, lowshelf, highshelf, peaking, notch, allpass
+    type: "lowpass",  //lowpass, highpass, bandpass, lowshelf, highshelf, peaking, notch, allpass
     bypass: 0
 });
 filter.frequency.value = 2000.;
@@ -53,7 +52,7 @@ filter.connect(convolver);
 
 const phaserBank = Array(5);
 for(let i = 0; i < phaserBank.length; i++) {
-    phaserBank[i] = new tuna.Phaser({bypass: false});
+    phaserBank[i] = new Tone.Phaser();
     phaserBank[i].connect(filter);
 }
 

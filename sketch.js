@@ -1,4 +1,4 @@
-console.log("Fractal soundscape V5.1")
+console.log("Fractal soundscape V6.1");
 
 let mandelbrot, downsample, analysis; // Contain, downsample, analyse, and run the shader.
 
@@ -584,10 +584,10 @@ function setPhaserParams(bank, val) { // Takes BFG bank and current time value, 
     let depth = newParams[2] * 0.25;
     let stereoPhase = newParams[3] * 20.;
 
-    phaserBank[i].baseModulationFrequency = freq;
-    phaserBank[i].rate = rate;
+    phaserBank[i].baseFrequency.value = freq;
+    phaserBank[i].frequency.value = rate;
     phaserBank[i].depth = depth;
-    phaserBank[i].stereoPhase = stereoPhase;
+    phaserBank[i].Q.value = stereoPhase;
 
   }
 
@@ -602,6 +602,8 @@ function setConvolverParams(depth) { // Takes mandelbrot depth (0 - 500) and set
 
   convolver.dryLevel = dry;
   convolver.wetLevel = wet;
+
+  convolver.wet.value = wet;
 
  
 
