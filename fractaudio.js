@@ -36,8 +36,8 @@ compressor.connect(master)
 //     bypass: 0
 // });
 
-//const convolver = new Tone.Convolver('audio/HS.wav');
-const convolver = new Tone.Freeverb(0.8, 3000);
+const convolver = new Tone.Convolver('audio/HS.wav');
+//const convolver = new Tone.Freeverb(0.8, 3000);
 
 Tone.connect(convolver, compressor);
 

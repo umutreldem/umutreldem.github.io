@@ -294,9 +294,9 @@ function draw() {
     textAlign(RIGHT);
     
     if(mobile) {
-      text("CONTROLS: \n \n Drag finger: Move around \n Pinch: Zoom in/out \n Rotate with two fingers: Rotate left/right \n Double tap: Reset \n Q Button: Change resolution \n\n\n Headphones are recommended \n for better experience. \n\n\n Created by \n Umut Eldem \n\n umutreldem.com", width - 50, 100);
+      text("CONTROLS: \n \n Drag finger: Move around \n Pinch: Zoom in/out \n Rotate with two fingers: Rotate left/right \n Double tap: Reset \n Q Button: Change resolution \n\n\n Chrome & Headphones are recommended \n for better experience. \n\n\n Created by \n Umut Eldem \n\n umutreldem.com", width - 50, 100);
     } else {
-      text("CONTROLS: \n \n Arrow keys: Move around \n W/S: Zoom in/out \n Q/E: Rotate left/right \n Spacebar: Reset position/zoom \n R: Change resolution \n\n\n Headphones are recommended \n for better experience. \n\n\n Created by \n Umut Eldem \n\n umutreldem.com", width - 50, 100);
+      text("CONTROLS: \n \n Arrow keys: Move around \n W/S: Zoom in/out \n Q/E: Rotate left/right \n Spacebar: Reset position/zoom \n R: Change resolution \n\n\n Chrome & Headphones are recommended \n for better experience. \n\n\n Created by \n Umut Eldem \n\n umutreldem.com", width - 50, 100);
 
     } 
   }
