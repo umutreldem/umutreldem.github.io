@@ -1,4 +1,4 @@
-console.log("Fractal soundscape V6.1");
+console.log("Fractal soundscape V6.2");
 
 let mandelbrot, downsample, analysis; // Contain, downsample, analyse, and run the shader.
 
@@ -25,6 +25,7 @@ let debugMode = false; // Debug & Mobile flag
 let mobile = false; 
 
 let quality = 1; // Mandelbrot render quality, goes from 1 to 4.
+let screenDiv = 30;
 
 let screenLength; // Length of screen.
 
@@ -218,7 +219,7 @@ function draw() {
     }
 
   } else {
-    if(frameCount%30 === 0) {
+    if(frameCount%screenDiv === 0) {
 
       generateGrains();
 
@@ -663,8 +664,8 @@ function makeGrain(arr) { // This will look at the colorBalance array and create
       //curColorAmount = sqrt(1 - pow(curColorAmount - 1, 2)); // easeOutCirc easing function
       //curColorAmount *= curColorAmount;
       //curColorAmount = -1. * (Math.cos(Math.PI * curColorAmount) - 1.) / 2.;
-      //curColorAmount = map(curColorAmount, 0., 1., 0.1, 0.5); // General downscaling.
-
+      curColorAmount = map(curColorAmount, 0., 1., 0.5, 1.);
+      
       //console.log(curColorAmount);
 
       mandelVoice.play(curColor, xPos, curColorAmount, grainParams[result]);
@@ -877,6 +878,7 @@ function changeQuality() {
       case 1:
         maxGrain = 30;
         minGrain = 15;
+        screenDiv = 30;
         break;
       case 1.5:
         maxGrain = 20;
@@ -898,18 +900,22 @@ function changeQuality() {
       case 1:
         maxGrain = 40;
         minGrain = 20;
+        screenDiv = 30;
         break;
       case 1.5:
         maxGrain = 30;
         minGrain = 15;
+        screenDiv = 60;
         break;
       case 2:
         maxGrain = 25;
         minGrain = 10;
+        screenDiv = 90;
         break;
       case 2.5:
         maxGrain = 20;
         minGrain = 5;
+        screenDiv = 120;
         break;
     }
 

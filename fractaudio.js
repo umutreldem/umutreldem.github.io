@@ -35,7 +35,10 @@ compressor.connect(master)
 //     impulse: "audio/HS.wav",    //the path to your impulse response
 //     bypass: 0
 // });
-const convolver = new Tone.Convolver('audio/HS.wav');
+
+//const convolver = new Tone.Convolver('audio/HS.wav');
+const convolver = new Tone.Freeverb(0.8, 3000);
+
 Tone.connect(convolver, compressor);
 
 const filter = new Tone.Filter({
