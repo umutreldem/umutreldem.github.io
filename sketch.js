@@ -56,10 +56,8 @@ let imagesLoaded = new Array();
 
 
 function preload() {
-  myImage = loadImage('content/drawings1_tr.png'); // Placeholder test image for detection
   introImage = loadImage('images/intro.png');
   welcomeImage = loadImage('images/welcome.png');
-  myShader = loadShader('shader/shady.vert', 'shader/shady.frag');
 
   for(let i = 0; i < 4; i++) {
     curves[i] = loadImage('images/curve' + i + '.png', () => {imagesLoaded[i] = true;}, () => {console.log('Failed to load image: curve' + i + '.png' )});
@@ -76,8 +74,6 @@ function setup() {
   canvas = createCanvas(640, 480, WEBGL);
   canvas.id('canvas'); 
   setAttributes('alpha', true); //Necessary to show the video capture underneath
-
-  intro = createGraphics(640, 480);
 
 
   for(let i = 0; i < 4; i++) {
@@ -101,7 +97,6 @@ function setup() {
 
 function draw() {
 
-  resetShader();
 
   if(modelsLoaded && soundEngine.audioLoad.every(value => value === true)) {
     switch(currentStage) {
