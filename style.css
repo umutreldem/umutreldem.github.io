@@ -1,9 +1,16 @@
-html, body {
-  margin: 0;
-  padding: 0;
+#canvas{
+  position: absolute;
+  z-index: 1;
 }
 
-canvas {
-  display: block;
+#video{
+  position: absolute;
+  z-index: 0;
+
+  /*Mirror code starts*/
+  transform: rotateY(180deg);
+  -webkit-transform:rotateY(180deg); /* Safari and Chrome */
+  -moz-transform:rotateY(180deg); /* Firefox */
+  /*Mirror code ends*/
 }
 
