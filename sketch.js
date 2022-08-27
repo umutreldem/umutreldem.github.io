@@ -26,7 +26,7 @@ TODO:
 
 */
 
-console.log("EtM 0.3");
+console.log("EtM 0.4");
 
 let canvas;
 let myImage;
@@ -95,6 +95,11 @@ function setup() {
   // button.style("font-size", "40px");
 
   angleMode(DEGREES);
+}
+
+
+function gimme() {
+  soundEngine.audioLoad.every(value => value === true);
 }
 
 function draw() {
