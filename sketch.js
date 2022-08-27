@@ -26,7 +26,7 @@ TODO:
 
 */
 
-console.log("EtM 0.5");
+console.log("EtM 0.51");
 
 let canvas;
 let myImage;

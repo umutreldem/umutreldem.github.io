@@ -3,6 +3,10 @@ class SoundEngine {
     constructor() {
 
         this.audioLoad = new Array(20);
+        for(let i = 0; i < 20; i++) {
+            this.audioLoad[i] = false;
+        }
+        console.log(this.audioLoad);
 
         this.scrapePlayers = new Array(4);
 
@@ -24,6 +28,8 @@ class SoundEngine {
             //this.scrapePlayers[i].toDestination();
             this.scrapePlayers[i].sync().start(0);
         }
+        console.log(this.audioLoad);
+
 
         let baseURL = 'audio/';
         let fingerURL = 'fingers/';
