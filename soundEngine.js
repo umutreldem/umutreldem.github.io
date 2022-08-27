@@ -2,14 +2,14 @@ class SoundEngine {
     
     constructor() {
 
-        this.audioLoad = new Array(20);
+        this.audioLoad = new Array(21);
 
         this.scrapePlayers = new Array(4);
 
         for(let i = 0 ; i < 4; i++) {
             this.scrapePlayers[i] = new Tone.Player({
                 url: 'audio/scrape/scrape' + i + '.wav',
-                onload: () => {audioLoad[15 + i] = true},
+                onload: () => {audioLoad[15 + (i + 1)] = true},
                 loop: true,
                 fadeIn: 2.5,
                 fadeOut: 1.5
