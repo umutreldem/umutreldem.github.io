@@ -26,7 +26,7 @@ TODO:
 
 */
 
-console.log("EtM 0.53");
+console.log("EtM 0.6");
 
 let canvas;
 let myImage;
@@ -74,6 +74,7 @@ function preload() {
 
 function setup() {
   canvas = createCanvas(640, 480, WEBGL);
+  canvas.parent('myContainer');
   canvas.id('canvas'); 
   setAttributes('alpha', true); //Necessary to show the video capture underneath
 

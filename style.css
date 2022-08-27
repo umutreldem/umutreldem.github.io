@@ -1,16 +1,26 @@
 #canvas{
   position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 1;
+
 }
 
 #video{
   position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotateY(180deg);
   z-index: 0;
-
   /*Mirror code starts*/
-  transform: rotateY(180deg);
-  -webkit-transform:rotateY(180deg); /* Safari and Chrome */
-  -moz-transform:rotateY(180deg); /* Firefox */
+  -webkit-transform: translate(-50%, -50%) rotateY(180deg); /* Safari and Chrome */
+  -moz-transform:  translate(-50%, -50%) rotateY(180deg); /* Firefox */
   /*Mirror code ends*/
+  border-style: solid;
+  border-width: 5px;
 }
 
+body{
+  background-color: #292f38	;
+}

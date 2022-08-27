@@ -11,9 +11,7 @@ class SoundEngine {
         this.scrapePlayers = new Array(4);
 
         for(let i = 0 ; i < 4; i++) {
-
             
-
             this.scrapePlayers[i] = new Tone.Player({
                 url: 'audio/scrape/scrape' + i + '.mp3',
                 onload: () => {
@@ -22,7 +20,7 @@ class SoundEngine {
                 },
 
                 loop: true,
-                fadeIn: 2.5, 
+                fadeIn: 2.5,
                 fadeOut: 1.5
             });
             //this.scrapePlayers[i].toDestination();
