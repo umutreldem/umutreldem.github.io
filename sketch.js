@@ -13,14 +13,11 @@ TODO:
   *DONE*-Add unique sounds for different scrapes
 
   *DONE*-STAGE 3:Display visuals only when sound is triggered
-  
-  STAGE 3:Add fade for triggered visuals
 
   -Add right sounds
-  -Create randomized "bank" of sounds on initialisation
 
-  -Introduction "click to continue" screen at the beginning
-  -Add meditation/intro audio with the "click to skip" visuals
+  *DONE*-Introduction "click to continue" screen at the beginning
+  *DONE*-Add meditation/intro audio with the "click to skip" visuals
   -Add stage 3 transition when the shapes in stage 2 are done
   -Add stage 3 intro visuals
 
@@ -34,6 +31,8 @@ let canvas;
 let myImage;
 let introImage;
 let welcomeImage;
+let stage2intro;
+let stage3intro;
 
 let startFlag = false;
 let welcomeFlag = false;
@@ -58,6 +57,8 @@ let imagesLoaded = new Array();
 function preload() {
   introImage = loadImage('images/intro.png');
   welcomeImage = loadImage('images/welcome.png');
+  stage2intro = loadImage('images/stage2intro.png');
+  //stage3intro = loadImage('images/stage3intro.png');
 
   for(let i = 0; i < 4; i++) {
     curves[i] = loadImage('images/curve' + i + '.png', () => {imagesLoaded[i] = true;}, () => {console.log('Failed to load image: curve' + i + '.png' )});
@@ -65,7 +66,7 @@ function preload() {
 
   loadingScreen = loadImage('images/loading.png', () => {imagesLoaded[4] = true;}, () => {console.log('Failed to load image: loading.png')});
   stage2Screen = loadImage('images/stage2.png', () => {imagesLoaded[5] = true;}, () => {console.log('Failed to load image: stage2.png')});
-  stage3Screen = loadImage('images/stage3.png', () => {imagesLoaded[6] = true;}, () => {console.log('Failed to load image: stage3.png')});
+  stage3Screen = loadImage('images/stage3intro.png', () => {imagesLoaded[6] = true;}, () => {console.log('Failed to load image: stage3.png')});
 
 }
 
@@ -134,12 +135,13 @@ function draw() {
 
 function mousePressed() {
 
+  if(modelsLoaded && soundEngine.audioLoad.every(value => value === true)) {
+
   if(!startFlag) {
     Tone.start();
   }
   startFlag = true;
   
-  if(modelsLoaded && soundEngine.audioLoad.every(value => value === true)) {
     switch(currentStage) {
 
       case 0:
@@ -151,10 +153,17 @@ function mousePressed() {
         break;
   
       case 2:
+        if(!stageTwo.startFlag) {
+          stageTwo.startFlag = true;
+        } else {
         stageTwo.clicked(mouseX/width, mouseY/height);
+        }
         break;
   
       case 3:
+        if(stageThree.introFlag) {
+          stageThree.introFlag = false;
+        }
         break;
   
       default:
@@ -165,14 +174,12 @@ function mousePressed() {
 
 
 
-
-
-  if(currentStage === 2) {
-  } else if(currentStage === 3) {
-    stageThree.introFlag = false;
-  } else {
-    stageThree.introFlag = true;
-  }
+  // if(currentStage === 2) {
+  // } else if(currentStage === 3) {
+  //   stageThree.introFlag = false;
+  // } else {
+  //   stageThree.introFlag = true;
+  // }
   //currentStage = ((currentStage + 1)) % 3 + 1;
 
   //soundEngine.jukebox['intro'].player.start();
@@ -193,9 +200,11 @@ function keyPressed() {
 function changeStage() {
   currentStage = (currentStage + 1) % 4;
 
-  if(currentStage != 1) {
-    stageTwo.endStage();
-  }
+
+
+  // if(currentStage != 1) {
+  //   stageTwo.endStage();
+  // }
 
   //console.log('very cool');
 

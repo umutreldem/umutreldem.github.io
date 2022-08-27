@@ -84,6 +84,6 @@ class SoundEngine {
             if(this.scrapePlayers[i].state == 'stopped') Tone.Transport.start();
         } else if(this.scrapePlayers[i].state == 'started') { 
             Tone.Transport.pause();
-            }
+        }
     }
 }

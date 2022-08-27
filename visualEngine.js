@@ -100,6 +100,8 @@ class StageTwo extends VisualEngine {
 
         super();
 
+        this.startFlag = false;
+
         this.d = pixelDensity();
 
         this.curFinger;
@@ -124,7 +126,7 @@ class StageTwo extends VisualEngine {
         push();
         scale(-1, 1); // Mirror the visualisation to match the mirrored webcam capture
         translate(-width/2, -height/2); // [0, 0] is top left
-
+        
         this.processDetection();
     }
 
@@ -138,16 +140,28 @@ class StageTwo extends VisualEngine {
 
         this.soundEngine.scrapePlayers[this.imageIndex].disconnect();
 
-        this.imageIndex = (this.imageIndex + 1) % this.images.length;
+        this.imageIndex++;
+
+        if(this.imageIndex >= 4) {
+            this.endStage();
+            return false;   
+        } 
+ 
         this.currImage = this.images[this.imageIndex];
 
         this.soundEngine.scrapePlayers[this.imageIndex].toDestination();
 
-        return false; 
+
+
+        return false;   
     }
 
+
+
     endStage() {
-        this.soundEngine.audioToggle(false, this.imageIndex);
+        //this.soundEngine.audioToggle(false, this.imageIndex);
+        changeStage();
+        //currentStage = 3;
     }
 
     processDetection() {
@@ -172,8 +186,9 @@ class StageTwo extends VisualEngine {
       
             this.prevFinger = this.curFinger;
       
-      
+            if(this.startFlag) {
             this.spotlight(parseInt(indexFinger.x * this.currImage.width), parseInt(indexFinger.y * this.currImage.height));
+            }
             //console.log(parseInt(indexFinger.x * myImage.width));
         } else {
             this.soundEngine.audioToggle(false, this.imageIndex);
@@ -193,7 +208,12 @@ class StageTwo extends VisualEngine {
         image(this.screen, width/2, -height/2, -width, height); // Draw image
         pop();
 
-        image(this.currImage, width/2, -height/2, -width, height); // Draw image
+        
+        if(!this.startFlag) {
+            image(stage2intro, -width/2, -height/2, width, height);
+        } else {
+            image(this.currImage, width/2, -height/2, -width, height); // Draw image
+        }
 
     }
 
