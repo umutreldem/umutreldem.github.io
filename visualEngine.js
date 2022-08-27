@@ -102,7 +102,8 @@ class StageTwo extends VisualEngine {
 
         this.startFlag = false;
 
-        this.d = pixelDensity();
+        //this.d = pixelDensity();
+        this.d = 1.;
 
         this.curFinger;
         this.prevFinger;
